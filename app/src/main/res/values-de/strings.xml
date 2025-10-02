@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Sati Timer</string>
+    <string name="meditation_timer">Sati Timer</string>
+    <string name="select_duration">Zeit wählen</string>
+
+    <string name="meditating">Meditieren…</string>
+
+    <string name="get_ready">Bereit %d</string>
+    <string name="breathe_instruction">Einatmen… Ausatmen…</string>
+    <string name="paused">Pausiert</string>
+    <string name="start">Starten</string>
+    <string name="stop">Stoppen</string>
+    <string name="resume">Fortsetzen</string>
+    <string name="twenty_minutes">20 Min</string>
+    <string name="thirty_minutes">30 Min</string>
+    <string name="one_minute">1 Min</string>
+    <string name="notification_channel_name">Sati Timer</string>
+    <string name="notification_channel_description">Timer-Benachrichtigungen</string>
+    <string name="notification_meditating">Meditieren: %s</string>
+    <string name="notification_preparing">Bereit: %ds</string>
+    <string name="notification_paused">Pausiert: %s</string>
+    <string name="notification_complete">Meditation abgeschlossen</string>
+    <string name="copyright">© 2025 Yuri Leikind. Alle Rechte vorbehalten.</string>
+</resources>

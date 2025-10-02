@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Sati Timer</string>
+    <string name="meditation_timer">Sati Timer</string>
+    <string name="select_duration">ကြာချိန်ရွေးပါ</string>
+
+    <string name="meditating">တရားထိုင်နေစဉ်…</string>
+
+    <string name="get_ready">အဆင်သင့်ပြုလုပ်ပါ %d</string>
+    <string name="breathe_instruction">အသက်ရှူဝင်… အသက်ရှူထွက်…</string>
+    <string name="paused">ခဏရပ်ထား</string>
+    <string name="start">စတင်</string>
+    <string name="stop">ရပ်</string>
+    <string name="resume">ဆက်လုပ်</string>
+    <string name="twenty_minutes">၂၀ မိနစ်</string>
+    <string name="thirty_minutes">၃၀ မိနစ်</string>
+    <string name="one_minute">၁ မိနစ်</string>
+    <string name="notification_channel_name">Sati Timer</string>
+    <string name="notification_channel_description">တရားထိုင်အချိန်တိုင်းအတွက်အကြောင်းကြားချက်များ</string>
+    <string name="notification_meditating">တရားထိုင်နေစဉ်: %s</string>
+    <string name="notification_preparing">အဆင်သင့်ပြုလုပ်ပါ: %d စက္ကန့်</string>
+    <string name="notification_paused">ခဏရပ်ထား: %s</string>
+    <string name="notification_complete">တရားထိုင်ခြင်းပြီးစီး</string>
+    <string name="copyright">© ၂၀၂၅ Yuri Leikind. မူပိုင်ခွင့်များကိုလုံးဝကြီးစိုးသည်။</string>
+</resources>

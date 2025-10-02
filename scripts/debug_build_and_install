@@ -1,0 +1,3 @@
+#!/bin/bash
+# Quick debug build and install
+./gradlew assembleDebug && ./gradlew installDebug

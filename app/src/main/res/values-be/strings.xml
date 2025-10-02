@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Sati Timer</string>
+    <string name="meditation_timer">Sati Timer</string>
+    <string name="select_duration">Выберыце час</string>
+
+    <string name="meditating">Медытацыя…</string>
+
+    <string name="get_ready">Рыхтуйся %d</string>
+    <string name="breathe_instruction">Удых… Выдых…</string>
+    <string name="paused">Прыпынена</string>
+    <string name="start">Пачаць</string>
+    <string name="stop">Спыніць</string>
+    <string name="resume">Працягнуць</string>
+    <string name="twenty_minutes">20 хв</string>
+    <string name="thirty_minutes">30 хв</string>
+    <string name="one_minute">1 хв</string>
+    <string name="notification_channel_name">Sati Timer</string>
+    <string name="notification_channel_description">Апавяшчэнні таймера</string>
+    <string name="notification_meditating">Медытацыя: %s</string>
+    <string name="notification_preparing">Рыхтуйся: %dс</string>
+    <string name="notification_paused">Прыпынена: %s</string>
+    <string name="notification_complete">Медытацыя завершана</string>
+    <string name="copyright">© 2025 Юрый Лейкінд. Усе правы захаваны.</string>
+</resources>

@@ -1,0 +1,3 @@
+#!/bin/bash
+# Install debug APK on connected devices
+./gradlew installDebug

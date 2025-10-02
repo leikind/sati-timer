@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Sati Timer</string>
+    <string name="meditation_timer">Sati Timer</string>
+    <string name="select_duration">කාලසීමාව තෝරන්න</string>
+
+    <string name="meditating">භාවනා කරමින්…</string>
+
+    <string name="get_ready">සූදානම් වන්න %d</string>
+    <string name="breathe_instruction">ශ්වාසය ගන්න… ශ්වාසය හරින්න…</string>
+    <string name="paused">නැවත්වූ</string>
+    <string name="start">ආරම්භ කරන්න</string>
+    <string name="stop">නවත්වන්න</string>
+    <string name="resume">නැවත ආරම්භ කරන්න</string>
+    <string name="twenty_minutes">මිනිත්තු 20</string>
+    <string name="thirty_minutes">මිනිත්තු 30</string>
+    <string name="one_minute">මිනිත්තුව 1</string>
+    <string name="notification_channel_name">Sati Timer</string>
+    <string name="notification_channel_description">භාවනා ටයිමරය සඳහා දැනුම් දීම්</string>
+    <string name="notification_meditating">භාවනා කරමින්: %s</string>
+    <string name="notification_preparing">සූදානම් වන්න: තත්පර %d</string>
+    <string name="notification_paused">නැවත්වූ: %s</string>
+    <string name="notification_complete">භාවනාව අවසන්</string>
+    <string name="copyright">© 2025 Yuri Leikind. සියලුම හිමිකම් ආරක්ෂිතයි.</string>
+</resources>

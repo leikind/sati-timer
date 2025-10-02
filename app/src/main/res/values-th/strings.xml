@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Sati Timer</string>
+    <string name="meditation_timer">Sati Timer</string>
+    <string name="select_duration">เลือกเวลา</string>
+
+    <string name="meditating">กำลังนั่งสมาธิ…</string>
+
+    <string name="get_ready">พร้อม %d</string>
+    <string name="breathe_instruction">หายใจเข้า… หายใจออก…</string>
+    <string name="paused">หยุดชั่วคราว</string>
+    <string name="start">เริ่ม</string>
+    <string name="stop">หยุด</string>
+    <string name="resume">ต่อ</string>
+    <string name="twenty_minutes">20 นาที</string>
+    <string name="thirty_minutes">30 นาที</string>
+    <string name="one_minute">1 นาที</string>
+    <string name="notification_channel_name">Sati Timer</string>
+    <string name="notification_channel_description">การแจ้งเตือนตัวจับเวลา</string>
+    <string name="notification_meditating">กำลังนั่งสมาธิ: %s</string>
+    <string name="notification_preparing">พร้อม: %d วินาที</string>
+    <string name="notification_paused">หยุดชั่วคราว: %s</string>
+    <string name="notification_complete">การนั่งสมาธิเสร็จสิ้น</string>
+    <string name="copyright">© 2025 Yuri Leikind สงวนลิขสิทธิ์</string>
+</resources>
