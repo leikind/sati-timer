@@ -28,5 +28,12 @@
     <string name="add">Hinzufügen</string>
     <string name="cancel">Abbrechen</string>
     <string name="remove_duration">Entfernen</string>
+    <string name="total_time_meditated">Gesamte Meditationszeit: %s</string>
+    <string name="day">Tag</string>
+    <string name="days">Tage</string>
+    <string name="hour">Stunde</string>
+    <string name="hours">Stunden</string>
+    <string name="minute">Minute</string>
+    <string name="minutes">Minuten</string>
     <string name="copyright">© 2025 Yuri Leikind. Alle Rechte vorbehalten.</string>
 </resources>

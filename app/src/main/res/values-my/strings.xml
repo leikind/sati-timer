@@ -28,5 +28,12 @@
     <string name="add">ထည့်သွင်း</string>
     <string name="cancel">ပယ်ဖျက်</string>
     <string name="remove_duration">ဖယ်ရှား</string>
+    <string name="total_time_meditated">စုစုပေါင်းတရားထိုင်ချိန်: %s</string>
+    <string name="day">နေ့</string>
+    <string name="days">နေ့များ</string>
+    <string name="hour">နာရီ</string>
+    <string name="hours">နာရီများ</string>
+    <string name="minute">မိနစ်</string>
+    <string name="minutes">မိနစ်များ</string>
     <string name="copyright">© ၂၀၂၅ Yuri Leikind. မူပိုင်ခွင့်များကိုလုံးဝကြီးစိုးသည်။</string>
 </resources>

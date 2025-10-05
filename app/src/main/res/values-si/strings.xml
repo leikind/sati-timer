@@ -28,5 +28,12 @@
     <string name="add">එකතු කරන්න</string>
     <string name="cancel">අවලංගු කරන්න</string>
     <string name="remove_duration">ඉවත් කරන්න</string>
+    <string name="total_time_meditated">සම්පූර්ණ භාවනා කාලය: %s</string>
+    <string name="day">දිනය</string>
+    <string name="days">දින</string>
+    <string name="hour">පැය</string>
+    <string name="hours">පැය</string>
+    <string name="minute">මිනිත්තුව</string>
+    <string name="minutes">මිනිත්තු</string>
     <string name="copyright">© 2025 Yuri Leikind. සියලු හිමිකම් ඇවිරිණි.</string>
 </resources>

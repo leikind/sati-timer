@@ -39,6 +39,7 @@ import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
 import androidx.core.app.NotificationCompat
+import be.profy.satitimer.data.MeditationRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -79,6 +80,7 @@ class SatiTimerService : Service() {
   private val binder = LocalBinder()
   private var mediaPlayer: MediaPlayer? = null
   private var wakeLock: PowerManager.WakeLock? = null
+  private lateinit var meditationRepository: MeditationRepository
   private var audioManager: AudioManager? = null
   private var audioFocusRequest: AudioFocusRequest? = null
 
@@ -121,6 +123,7 @@ class SatiTimerService : Service() {
   override fun onCreate() {
     super.onCreate()
     android.util.Log.d("SatiTimer", "Service onCreate() called")
+    meditationRepository = MeditationRepository(this)
     createNotificationChannel()
     initializeMediaPlayer()
     acquireWakeLock()
@@ -292,7 +295,7 @@ class SatiTimerService : Service() {
     startTimerCountdown()
   }
 
-  fun stopTimer() {
+  fun stopTimer(completed: Boolean = false) {
     timerJob?.cancel()
     _state.value =
             _state.value.copy(
@@ -353,10 +356,22 @@ class SatiTimerService : Service() {
                               _state.value.copy(remainingTime = _state.value.remainingTime - 1)
                       updateNotification()
                     } else {
-                      // Timer finished - play gong and stop
+                      // Timer finished - play gong and complete session
+                      android.util.Log.d("SatiTimerService", "Timer finished, playing gong")
                       playGong()
                       delay(2000L) // Give time for gong to play
-                      stopTimer()
+
+                      // Complete the meditation session
+                      val actualDuration = _state.value.totalTime
+                      android.util.Log.d(
+                              "SatiTimerService",
+                              "Completing session with duration: $actualDuration seconds"
+                      )
+                      CoroutineScope(Dispatchers.IO).launch {
+                        meditationRepository.completeSession(actualDuration)
+                      }
+
+                      stopTimer(true) // Natural completion
                       break
                     }
                   }

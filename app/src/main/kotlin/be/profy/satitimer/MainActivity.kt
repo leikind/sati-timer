@@ -36,6 +36,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -80,6 +81,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -88,6 +90,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import be.profy.satitimer.data.MeditationRepository
 import be.profy.satitimer.ui.theme.SatiTimerTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -243,15 +246,35 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun SatiTimerScreen(modifier: Modifier = Modifier, getTimerService: () -> SatiTimerService?) {
-  var timeInSeconds by remember { mutableIntStateOf(1200) } // 20 minutes default
+  var timeInSeconds by remember { mutableIntStateOf(60) } // Will be updated from recentDurations
   var serviceState by remember { mutableStateOf(TimerServiceState()) }
   var showDurationPicker by remember { mutableStateOf(false) }
+  var showResetDialog by remember { mutableStateOf(false) }
 
   val context = LocalContext.current
-  val durationRepository = remember { DurationRepository(context) }
-  val recentDurations by
-          durationRepository.recentDurations.collectAsState(initial = listOf(60, 1200, 1800))
+  val repository = remember { MeditationRepository(context) }
+  val recentDurations by repository.recentDurations.collectAsState(initial = listOf(60, 1200, 1800))
   val coroutineScope = rememberCoroutineScope()
+  val totalMinutesMeditated by repository.totalMinutesMeditated.collectAsState(initial = 0)
+
+  // Initialize total meditation time and refresh when timer state changes
+  LaunchedEffect(Unit) { repository.initializeTotalTime() }
+
+  // Set timeInSeconds to first (leftmost) recent duration when recentDurations change
+  LaunchedEffect(recentDurations) {
+    if (recentDurations.isNotEmpty()) {
+      timeInSeconds = recentDurations.first()
+    }
+  }
+
+  // Refresh total time when meditation session ends
+  LaunchedEffect(serviceState.timerState) {
+    if (serviceState.timerState == TimerState.STOPPED) {
+      // Small delay to ensure session completion has finished
+      kotlinx.coroutines.delay(500L)
+      repository.initializeTotalTime()
+    }
+  }
 
   // Observe service state
   LaunchedEffect(Unit) {
@@ -394,7 +417,7 @@ fun SatiTimerScreen(modifier: Modifier = Modifier, getTimerService: () -> SatiTi
                   val durationSeconds = durationMinutes * 60
                   timeInSeconds = durationSeconds
                   // For new custom durations, immediately add to MRU queue
-                  coroutineScope.launch { durationRepository.addRecentDuration(durationSeconds) }
+                  coroutineScope.launch { repository.addRecentDuration(durationSeconds) }
                   showDurationPicker = false
                 },
                 onDismiss = { showDurationPicker = false }
@@ -409,8 +432,11 @@ fun SatiTimerScreen(modifier: Modifier = Modifier, getTimerService: () -> SatiTi
                 val service = getTimerService()
                 when (serviceState.timerState) {
                   TimerState.STOPPED -> {
-                    // Add selected duration to MRU queue when actually starting meditation
-                    coroutineScope.launch { durationRepository.addRecentDuration(timeInSeconds) }
+                    // Add selected duration to MRU queue and start session tracking
+                    coroutineScope.launch {
+                      repository.addRecentDuration(timeInSeconds)
+                      repository.startSession(timeInSeconds)
+                    }
 
                     // Start the service if not running, or call startTimer if already running
                     if (service == null) {
@@ -460,6 +486,46 @@ fun SatiTimerScreen(modifier: Modifier = Modifier, getTimerService: () -> SatiTi
       }
 
       Spacer(modifier = Modifier.height(48.dp))
+
+      // Total time meditated label (bottom right corner)
+      android.util.Log.d(
+              "MainActivity",
+              "Total minutes: $totalMinutesMeditated, Timer state: ${serviceState.timerState}"
+      )
+      if (totalMinutesMeditated > 0 && serviceState.timerState == TimerState.STOPPED) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+          Text(
+                  text =
+                          "Total meditation time: ${formatTotalTime(totalMinutesMeditated, context)}",
+                  style = MaterialTheme.typography.bodyMedium,
+                  color = Color(0xFFE3C170).copy(alpha = 0.8f),
+                  modifier =
+                          Modifier.padding(end = 16.dp).pointerInput(Unit) {
+                            detectTapGestures(onLongPress = { showResetDialog = true })
+                          }
+          )
+        }
+
+        // Reset confirmation dialog
+        if (showResetDialog) {
+          AlertDialog(
+                  onDismissRequest = { showResetDialog = false },
+                  title = { Text("Reset meditation time?") },
+                  text = { Text("This will reset your total meditation time to zero.") },
+                  confirmButton = {
+                    TextButton(
+                            onClick = {
+                              coroutineScope.launch { repository.resetAllMeditationData() }
+                              showResetDialog = false
+                            }
+                    ) { Text("Yes") }
+                  },
+                  dismissButton = {
+                    TextButton(onClick = { showResetDialog = false }) { Text("Cancel") }
+                  }
+          )
+        }
+      }
     }
   }
 }
@@ -519,7 +585,7 @@ fun DurationPickerDialog(
               Spacer(modifier = Modifier.height(16.dp))
 
               // Segmented duration picker - exclude current durations
-              val allDurations = (10..90 step 5).toList()
+              val allDurations = (1..90 step 1).filter { it == 1 || it % 5 == 0 }.toList()
               val currentDurationMinutes = currentDurations.map { it / 60 }
               val availableDurations = allDurations.filter { it !in currentDurationMinutes }
 
@@ -582,6 +648,34 @@ fun formatTime(seconds: Int): String {
   val minutes = seconds / 60
   val remainingSeconds = seconds % 60
   return "%02d:%02d".format(minutes, remainingSeconds)
+}
+
+fun formatTotalTime(totalMinutes: Int, context: Context): String {
+  if (totalMinutes == 0) return ""
+
+  val days = totalMinutes / (24 * 60)
+  val hours = (totalMinutes % (24 * 60)) / 60
+  val minutes = totalMinutes % 60
+
+  return buildString {
+    if (days > 0) {
+      append(
+              "$days ${if (days == 1) context.getString(R.string.day) else context.getString(R.string.days)}"
+      )
+      if (hours > 0 || minutes > 0) append(" ")
+    }
+    if (hours > 0) {
+      append(
+              "$hours ${if (hours == 1) context.getString(R.string.hour) else context.getString(R.string.hours)}"
+      )
+      if (minutes > 0) append(" ")
+    }
+    if (minutes > 0) {
+      append(
+              "$minutes ${if (minutes == 1) context.getString(R.string.minute) else context.getString(R.string.minutes)}"
+      )
+    }
+  }
 }
 
 @Preview(showBackground = true)

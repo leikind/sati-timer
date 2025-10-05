@@ -28,5 +28,12 @@
     <string name="add">Додати</string>
     <string name="cancel">Скасувати</string>
     <string name="remove_duration">Видалити</string>
+    <string name="total_time_meditated">Загальний час медитації: %s</string>
+    <string name="day">день</string>
+    <string name="days">днів</string>
+    <string name="hour">година</string>
+    <string name="hours">годин</string>
+    <string name="minute">хвилина</string>
+    <string name="minutes">хвилин</string>
     <string name="copyright">© 2025 Юрій Лейкінд. Усі права захищено.</string>
 </resources>

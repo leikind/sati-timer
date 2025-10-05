@@ -28,5 +28,12 @@
     <string name="add">เพิ่ม</string>
     <string name="cancel">ยกเลิก</string>
     <string name="remove_duration">ลบ</string>
+    <string name="total_time_meditated">เวลารวมในการทำสมาธิ: %s</string>
+    <string name="day">วัน</string>
+    <string name="days">วัน</string>
+    <string name="hour">ชั่วโมง</string>
+    <string name="hours">ชั่วโมง</string>
+    <string name="minute">นาที</string>
+    <string name="minutes">นาที</string>
     <string name="copyright">© 2025 Yuri Leikind สงวนลิขสิทธิ์</string>
 </resources>

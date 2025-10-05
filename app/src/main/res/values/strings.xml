@@ -22,6 +22,13 @@
     <string name="add">Add</string>
     <string name="cancel">Cancel</string>
     <string name="remove_duration">Remove</string>
+    <string name="total_time_meditated">Total time meditated: %s</string>
+    <string name="day">day</string>
+    <string name="days">days</string>
+    <string name="hour">hour</string>
+    <string name="hours">hours</string>
+    <string name="minute">minute</string>
+    <string name="minutes">minutes</string>
     <string name="notification_channel_name">Sati Timer</string>
     <string name="notification_channel_description">Notifications for sati timer</string>
     <string name="notification_meditating">Meditating: %s</string>
