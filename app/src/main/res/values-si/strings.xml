@@ -18,8 +18,15 @@
     <string name="notification_channel_name">Sati Timer</string>
     <string name="notification_channel_description">භාවනා ටයිමරය සඳහා දැනුම් දීම්</string>
     <string name="notification_meditating">භාවනා කරමින්: %s</string>
-    <string name="notification_preparing">සූදානම් වන්න: තත්පර %d</string>
-    <string name="notification_paused">නැවත්වූ: %s</string>
+    <string name="notification_preparing">සූදානම්: %ds</string>
+    <string name="notification_paused">විරාමය: %s</string>
     <string name="notification_complete">භාවනාව අවසන්</string>
-    <string name="copyright">© 2025 Yuri Leikind. සියලුම හිමිකම් ආරක්ෂිතයි.</string>
+    <string name="add_custom_duration">එකතු කරන්න</string>
+    <string name="select_custom_duration">කාලය තෝරන්න</string>
+    <string name="choose_meditation_duration">භාවනා කාලය තෝරන්න:</string>
+    <string name="selected_duration">තෝරා ගත්: මිනිත්තු %d</string>
+    <string name="add">එකතු කරන්න</string>
+    <string name="cancel">අවලංගු කරන්න</string>
+    <string name="remove_duration">ඉවත් කරන්න</string>
+    <string name="copyright">© 2025 Yuri Leikind. සියලු හිමිකම් ඇවිරිණි.</string>
 </resources>

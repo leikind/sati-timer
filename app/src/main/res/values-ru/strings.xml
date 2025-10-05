@@ -21,5 +21,12 @@
     <string name="notification_preparing">Готовься: %dс</string>
     <string name="notification_paused">Приостановлено: %s</string>
     <string name="notification_complete">Медитация завершена</string>
+    <string name="add_custom_duration">Добавить</string>
+    <string name="select_custom_duration">Выберите время</string>
+    <string name="choose_meditation_duration">Выберите время медитации:</string>
+    <string name="selected_duration">Выбрано: %d минут</string>
+    <string name="add">Добавить</string>
+    <string name="cancel">Отмена</string>
+    <string name="remove_duration">Удалить</string>
     <string name="copyright">© 2025 Юрий Лейкинд. Все права защищены.</string>
 </resources>

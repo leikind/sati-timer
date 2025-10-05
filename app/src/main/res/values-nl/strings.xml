@@ -21,5 +21,12 @@
     <string name="notification_preparing">Klaar: %ds</string>
     <string name="notification_paused">Gepauzeerd: %s</string>
     <string name="notification_complete">Meditatie voltooid</string>
+    <string name="add_custom_duration">Toevoegen</string>
+    <string name="select_custom_duration">Kies tijd</string>
+    <string name="choose_meditation_duration">Kies meditatie tijd:</string>
+    <string name="selected_duration">Geselecteerd: %d minuten</string>
+    <string name="add">Toevoegen</string>
+    <string name="cancel">Annuleren</string>
+    <string name="remove_duration">Verwijderen</string>
     <string name="copyright">© 2025 Yuri Leikind. Alle rechten voorbehouden.</string>
 </resources>

@@ -20,6 +20,13 @@
     <string name="notification_meditating">กำลังนั่งสมาธิ: %s</string>
     <string name="notification_preparing">พร้อม: %d วินาที</string>
     <string name="notification_paused">หยุดชั่วคราว: %s</string>
-    <string name="notification_complete">การนั่งสมาธิเสร็จสิ้น</string>
+    <string name="notification_complete">การทำสมาธิเสร็จสิ้น</string>
+    <string name="add_custom_duration">เพิ่ม</string>
+    <string name="select_custom_duration">เลือกเวลา</string>
+    <string name="choose_meditation_duration">เลือกระยะเวลาทำสมาธิ:</string>
+    <string name="selected_duration">เลือกแล้ว: %d นาที</string>
+    <string name="add">เพิ่ม</string>
+    <string name="cancel">ยกเลิก</string>
+    <string name="remove_duration">ลบ</string>
     <string name="copyright">© 2025 Yuri Leikind สงวนลิขสิทธิ์</string>
 </resources>

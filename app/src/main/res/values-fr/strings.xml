@@ -21,5 +21,12 @@
     <string name="notification_preparing">Prêt : %ds</string>
     <string name="notification_paused">En pause : %s</string>
     <string name="notification_complete">Méditation terminée</string>
+    <string name="add_custom_duration">Ajouter</string>
+    <string name="select_custom_duration">Choisir temps</string>
+    <string name="choose_meditation_duration">Choisissez la durée de méditation :</string>
+    <string name="selected_duration">Sélectionné : %d minutes</string>
+    <string name="add">Ajouter</string>
+    <string name="cancel">Annuler</string>
+    <string name="remove_duration">Supprimer</string>
     <string name="copyright">© 2025 Yuri Leikind. Tous droits réservés.</string>
 </resources>

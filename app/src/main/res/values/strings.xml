@@ -15,11 +15,18 @@
     <string name="twenty_minutes">20 min</string>
     <string name="thirty_minutes">30 min</string>
     <string name="one_minute">1 min</string>
-    <string name="notification_channel_name">Meditation Timer</string>
-    <string name="notification_channel_description">Notifications for meditation timer</string>
+    <string name="add_custom_duration">Add</string>
+    <string name="select_custom_duration">Select Duration</string>
+    <string name="choose_meditation_duration">Choose meditation duration:</string>
+    <string name="selected_duration">Selected: %d minutes</string>
+    <string name="add">Add</string>
+    <string name="cancel">Cancel</string>
+    <string name="remove_duration">Remove</string>
+    <string name="notification_channel_name">Sati Timer</string>
+    <string name="notification_channel_description">Notifications for sati timer</string>
     <string name="notification_meditating">Meditating: %s</string>
     <string name="notification_preparing">Get ready: %ds</string>
     <string name="notification_paused">Paused: %s</string>
-    <string name="notification_complete">Meditation Complete</string>
+    <string name="notification_complete">Session Complete</string>
     <string name="copyright">© 2025 Yuri Leikind. All rights reserved.</string>
 </resources>

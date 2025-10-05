@@ -21,7 +21,7 @@
  * SOFTWARE.
  */
 
-package be.profy.meditationtimer
+package be.profy.satitimer
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -55,10 +55,10 @@ data class TimerServiceState(
         val totalTime: Int = 1200
 )
 
-class MeditationTimerService : Service() {
+class SatiTimerService : Service() {
 
   companion object {
-    const val NOTIFICATION_CHANNEL_ID = "meditation_timer_channel"
+    const val NOTIFICATION_CHANNEL_ID = "sati_timer_channel"
     const val NOTIFICATION_ID = 1
 
     const val ACTION_START_TIMER = "START_TIMER"
@@ -69,7 +69,7 @@ class MeditationTimerService : Service() {
     const val EXTRA_DURATION = "duration"
 
     // Intent actions for broadcasts
-    const val ACTION_TIMER_UPDATE = "com.example.meditationtimer.TIMER_UPDATE"
+    const val ACTION_TIMER_UPDATE = "com.example.satitimer.TIMER_UPDATE"
     const val EXTRA_TIMER_STATE = "timer_state"
     const val EXTRA_REMAINING_TIME = "remaining_time"
     const val EXTRA_PREPARATION_TIME = "preparation_time"
@@ -115,41 +115,61 @@ class MeditationTimerService : Service() {
     }
 
   inner class LocalBinder : Binder() {
-    fun getService(): MeditationTimerService = this@MeditationTimerService
+    fun getService(): SatiTimerService = this@SatiTimerService
   }
 
   override fun onCreate() {
     super.onCreate()
+    android.util.Log.d("SatiTimer", "Service onCreate() called")
     createNotificationChannel()
     initializeMediaPlayer()
     acquireWakeLock()
-    setupAudioManager()
   }
 
   override fun onBind(intent: Intent): IBinder = binder
 
   override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
     android.util.Log.d(
-            "MeditationTimer",
-            "Service onStartCommand called with action: ${intent?.action}"
+            "SatiTimer",
+            "Service onStartCommand called with action: ${intent?.action}, flags: $flags, startId: $startId"
     )
     when (intent?.action) {
       ACTION_START_TIMER -> {
         val duration = intent.getIntExtra(EXTRA_DURATION, 1200)
-        android.util.Log.d("MeditationTimer", "Starting timer for $duration seconds")
+        android.util.Log.d("SatiTimer", "Starting timer for $duration seconds")
         startTimer(duration)
       }
       ACTION_STOP_TIMER -> {
-        android.util.Log.d("MeditationTimer", "Stopping timer")
+        android.util.Log.d("SatiTimer", "Stopping timer")
         stopTimer()
       }
       ACTION_PAUSE_TIMER -> pauseTimer()
       ACTION_RESUME_TIMER -> resumeTimer()
     }
-    return START_NOT_STICKY
+    android.util.Log.d("SatiTimer", "Service onStartCommand returning START_STICKY")
+    return START_STICKY
+  }
+
+  override fun onTaskRemoved(rootIntent: Intent?) {
+    android.util.Log.d(
+            "SatiTimer",
+            "Service onTaskRemoved called - app was removed from recent apps"
+    )
+    super.onTaskRemoved(rootIntent)
+  }
+
+  override fun onLowMemory() {
+    android.util.Log.w("SatiTimer", "Service onLowMemory called - system is low on memory")
+    super.onLowMemory()
+  }
+
+  override fun onTrimMemory(level: Int) {
+    android.util.Log.w("SatiTimer", "Service onTrimMemory called with level: $level")
+    super.onTrimMemory(level)
   }
 
   private fun createNotificationChannel() {
+    android.util.Log.d("SatiTimer", "Creating notification channel")
     val channel =
             NotificationChannel(
                             NOTIFICATION_CHANNEL_ID,
@@ -163,6 +183,7 @@ class MeditationTimerService : Service() {
 
     val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     notificationManager.createNotificationChannel(channel)
+    android.util.Log.d("SatiTimer", "Notification channel created successfully")
   }
 
   private fun initializeMediaPlayer() {
@@ -175,11 +196,7 @@ class MeditationTimerService : Service() {
 
   private fun acquireWakeLock() {
     val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
-    wakeLock =
-            powerManager.newWakeLock(
-                    PowerManager.PARTIAL_WAKE_LOCK,
-                    "MeditationTimer:TimerWakeLock"
-            )
+    wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "SatiTimer:TimerWakeLock")
   }
 
   private fun setupAudioManager() {
@@ -196,7 +213,7 @@ class MeditationTimerService : Service() {
                       )
                       .setAcceptsDelayedFocusGain(true)
                       .setOnAudioFocusChangeListener { focusChange ->
-                        android.util.Log.d("MeditationTimer", "Audio focus changed: $focusChange")
+                        android.util.Log.d("SatiTimer", "Audio focus changed: $focusChange")
                         // We don't need to handle focus changes - we just want to take focus
                         // to pause other apps during meditation
                       }
@@ -216,7 +233,7 @@ class MeditationTimerService : Service() {
       val result =
               audioManager?.requestAudioFocus(
                       { focusChange ->
-                        android.util.Log.d("MeditationTimer", "Audio focus changed: $focusChange")
+                        android.util.Log.d("SatiTimer", "Audio focus changed: $focusChange")
                       },
                       AudioManager.STREAM_MUSIC,
                       AudioManager.AUDIOFOCUS_GAIN
@@ -231,13 +248,13 @@ class MeditationTimerService : Service() {
     } else {
       @Suppress("DEPRECATION")
       audioManager?.abandonAudioFocus { focusChange ->
-        android.util.Log.d("MeditationTimer", "Audio focus abandoned: $focusChange")
+        android.util.Log.d("SatiTimer", "Audio focus abandoned: $focusChange")
       }
     }
   }
 
   fun startTimer(durationSeconds: Int) {
-    android.util.Log.d("MeditationTimer", "startTimer called with duration: $durationSeconds")
+    android.util.Log.d("SatiTimer", "startTimer called with duration: $durationSeconds")
     _state.value =
             TimerServiceState(
                     timerState = TimerState.PREPARING,
@@ -250,10 +267,28 @@ class MeditationTimerService : Service() {
 
     // Request audio focus to pause other apps
     val audioFocusGranted = requestAudioFocus()
-    android.util.Log.d("MeditationTimer", "Audio focus granted: $audioFocusGranted")
+    android.util.Log.d("SatiTimer", "Audio focus granted: $audioFocusGranted")
 
-    startForeground(NOTIFICATION_ID, createNotification())
-    android.util.Log.d("MeditationTimer", "Foreground service started")
+    val notification = createNotification()
+    android.util.Log.d("SatiTimer", "About to start foreground service with notification")
+    try {
+      startForeground(NOTIFICATION_ID, notification)
+      android.util.Log.d("SatiTimer", "Foreground service started successfully")
+
+      // Verify the notification is visible
+      val notificationManager =
+              getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+      val activeNotifications = notificationManager.activeNotifications
+      android.util.Log.d("SatiTimer", "Active notifications count: ${activeNotifications.size}")
+      activeNotifications.forEach { notification ->
+        android.util.Log.d(
+                "SatiTimer",
+                "Active notification ID: ${notification.id}, tag: ${notification.tag}"
+        )
+      }
+    } catch (e: Exception) {
+      android.util.Log.e("SatiTimer", "Failed to start foreground service", e)
+    }
     startTimerCountdown()
   }
 
@@ -273,23 +308,27 @@ class MeditationTimerService : Service() {
   }
 
   fun pauseTimer() {
+    android.util.Log.d("SatiTimer", "pauseTimer called, current state: $currentState")
     if (currentState == TimerState.RUNNING) {
       timerJob?.cancel()
       _state.value = _state.value.copy(timerState = TimerState.PAUSED)
       updateNotification()
+      android.util.Log.d("SatiTimer", "Timer paused and notification updated")
     }
   }
 
   fun resumeTimer() {
+    android.util.Log.d("SatiTimer", "resumeTimer called, current state: $currentState")
     if (currentState == TimerState.PAUSED) {
       _state.value = _state.value.copy(timerState = TimerState.RUNNING)
       startTimerCountdown()
       updateNotification()
+      android.util.Log.d("SatiTimer", "Timer resumed and notification updated")
     }
   }
 
   private fun startTimerCountdown() {
-    android.util.Log.d("MeditationTimer", "startTimerCountdown called")
+    android.util.Log.d("SatiTimer", "startTimerCountdown called")
     timerJob =
             serviceScope.launch {
               while (true) {
@@ -342,6 +381,11 @@ class MeditationTimerService : Service() {
   }
 
   private fun createNotification(): Notification {
+    val state = _state.value
+    android.util.Log.d(
+            "SatiTimer",
+            "Creating notification for state: ${state.timerState}, remaining: ${state.remainingTime}, prep: ${state.preparationTime}"
+    )
 
     val notificationIntent = Intent(this, MainActivity::class.java)
     val pendingIntent =
@@ -352,8 +396,7 @@ class MeditationTimerService : Service() {
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
 
-    val stopIntent =
-            Intent(this, MeditationTimerService::class.java).apply { action = ACTION_STOP_TIMER }
+    val stopIntent = Intent(this, SatiTimerService::class.java).apply { action = ACTION_STOP_TIMER }
     val stopPendingIntent =
             PendingIntent.getService(
                     this,
@@ -362,7 +405,6 @@ class MeditationTimerService : Service() {
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
 
-    val state = _state.value
     val contentText =
             when (state.timerState) {
               TimerState.PREPARING ->
@@ -374,25 +416,39 @@ class MeditationTimerService : Service() {
               TimerState.STOPPED -> getString(R.string.notification_complete)
             }
 
-    return NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
-            .setContentTitle(getString(R.string.meditation_timer))
-            .setContentText(contentText)
-            .setSmallIcon(android.R.drawable.ic_dialog_info)
-            .setContentIntent(pendingIntent)
-            .addAction(
-                    android.R.drawable.ic_media_pause,
-                    getString(R.string.stop),
-                    stopPendingIntent
-            )
-            .setOngoing(true)
-            .setSilent(true)
-            .setCategory(NotificationCompat.CATEGORY_ALARM)
-            .build()
+    android.util.Log.d("SatiTimer", "Notification content text: $contentText")
+
+    val notification =
+            NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+                    .setContentTitle(getString(R.string.meditation_timer))
+                    .setContentText(contentText)
+                    .setSmallIcon(android.R.drawable.ic_dialog_info)
+                    .setContentIntent(pendingIntent)
+                    .addAction(
+                            android.R.drawable.ic_media_pause,
+                            getString(R.string.stop),
+                            stopPendingIntent
+                    )
+                    .setOngoing(true)
+                    .setSilent(true)
+                    .setCategory(NotificationCompat.CATEGORY_ALARM)
+                    .build()
+
+    android.util.Log.d("SatiTimer", "Notification created successfully")
+    return notification
   }
 
   private fun updateNotification() {
-    val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-    notificationManager.notify(NOTIFICATION_ID, createNotification())
+    android.util.Log.d("SatiTimer", "updateNotification called")
+    try {
+      val notificationManager =
+              getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+      val notification = createNotification()
+      notificationManager.notify(NOTIFICATION_ID, notification)
+      android.util.Log.d("SatiTimer", "Notification updated successfully")
+    } catch (e: Exception) {
+      android.util.Log.e("SatiTimer", "Failed to update notification", e)
+    }
   }
 
   private fun formatTime(seconds: Int): String {
@@ -402,10 +458,12 @@ class MeditationTimerService : Service() {
   }
 
   override fun onDestroy() {
+    android.util.Log.d("SatiTimer", "Service onDestroy() called")
     super.onDestroy()
     timerJob?.cancel()
     mediaPlayer?.release()
     wakeLock?.release()
     releaseAudioFocus()
+    android.util.Log.d("SatiTimer", "Service destroyed completely")
   }
 }

@@ -20,6 +20,13 @@
     <string name="notification_meditating">Медитація: %s</string>
     <string name="notification_preparing">Готуйся: %dс</string>
     <string name="notification_paused">Призупинено: %s</string>
-    <string name="notification_complete">Медитація завершена</string>
-    <string name="copyright">© 2025 Юрій Лейкінд. Всі права захищені.</string>
+    <string name="notification_complete">Медитацію завершено</string>
+    <string name="add_custom_duration">Додати</string>
+    <string name="select_custom_duration">Оберіть час</string>
+    <string name="choose_meditation_duration">Оберіть час медитації:</string>
+    <string name="selected_duration">Обрано: %d хвилин</string>
+    <string name="add">Додати</string>
+    <string name="cancel">Скасувати</string>
+    <string name="remove_duration">Видалити</string>
+    <string name="copyright">© 2025 Юрій Лейкінд. Усі права захищено.</string>
 </resources>

@@ -21,7 +21,7 @@
  * SOFTWARE.
  */
 
-package be.profy.meditationtimer
+package be.profy.satitimer
 
 import android.content.ComponentName
 import android.content.Context
@@ -42,29 +42,39 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddCircleOutline
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -72,29 +82,26 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
-import be.profy.meditationtimer.ui.theme.MeditationTimerTheme
+import be.profy.satitimer.ui.theme.SatiTimerTheme
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
-  companion object {
-    private const val NOTIFICATION_PERMISSION_REQUEST = 100
-  }
-
-  private var timerService: MeditationTimerService? = null
+  private var timerService: SatiTimerService? = null
   private var isBound = false
 
   private val connection =
           object : ServiceConnection {
+
             override fun onServiceConnected(className: ComponentName, service: IBinder) {
-              val binder = service as MeditationTimerService.LocalBinder
+              val binder = service as SatiTimerService.LocalBinder
               timerService = binder.getService()
               isBound = true
             }
@@ -105,8 +112,13 @@ class MainActivity : ComponentActivity() {
             }
           }
 
+  companion object {
+    private const val NOTIFICATION_PERMISSION_REQUEST = 100
+  }
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+    android.util.Log.d("SatiTimer", "MainActivity onCreate() called")
     enableEdgeToEdge()
 
     // Request notification permission for Android 13+
@@ -122,10 +134,12 @@ class MainActivity : ComponentActivity() {
       }
     }
 
+    android.util.Log.d("SatiTimer", "MainActivity onCreate() completed")
+
     setContent {
-      MeditationTimerTheme {
+      SatiTimerTheme {
         Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-          MeditationTimerScreen(
+          SatiTimerScreen(
                   modifier = Modifier.padding(innerPadding),
                   getTimerService = { timerService }
           )
@@ -136,27 +150,35 @@ class MainActivity : ComponentActivity() {
 
   override fun onStart() {
     super.onStart()
-    Intent(this, MeditationTimerService::class.java).also { intent ->
+    android.util.Log.d("SatiTimer", "MainActivity onStart() called")
+    Intent(this, SatiTimerService::class.java).also { intent ->
       bindService(intent, connection, Context.BIND_AUTO_CREATE)
+      android.util.Log.d("SatiTimer", "Service bind requested in onStart()")
     }
   }
 
   override fun onStop() {
     super.onStop()
-    if (isBound) {
+    android.util.Log.d("SatiTimer", "MainActivity onStop() called")
+    // Don't unbind service when going to background if timer is running
+    // This prevents the service from being destroyed and losing the notification
+    val shouldUnbind =
+            timerService?.state?.value?.let { state -> state.timerState == TimerState.STOPPED }
+                    ?: true
+
+    if (isBound && shouldUnbind) {
       unbindService(connection)
       isBound = false
+      android.util.Log.d("SatiTimer", "Service unbound in onStop() - timer stopped")
+    } else if (isBound) {
+      android.util.Log.d("SatiTimer", "Service kept bound in onStop() - timer running")
     }
-  }
-
-  override fun onPause() {
-    super.onPause()
-    // Exit immersive mode when app goes to background
-    exitImmersiveMode()
+    android.util.Log.d("SatiTimer", "MainActivity onStop() completed")
   }
 
   override fun onResume() {
     super.onResume()
+    android.util.Log.d("SatiTimer", "MainActivity onResume() called")
     // Re-enter immersive mode if timer is running
     timerService?.state?.value?.let { state ->
       if (state.timerState == TimerState.PREPARING || state.timerState == TimerState.RUNNING) {
@@ -165,36 +187,71 @@ class MainActivity : ComponentActivity() {
     }
   }
 
+  override fun onPause() {
+    super.onPause()
+    android.util.Log.d("SatiTimer", "MainActivity onPause() called")
+    // Exit immersive mode when app goes to background
+    exitImmersiveMode()
+  }
+
+  override fun onDestroy() {
+    android.util.Log.d("SatiTimer", "MainActivity onDestroy() called")
+    // Always unbind when activity is destroyed
+    if (isBound) {
+      unbindService(connection)
+      isBound = false
+      android.util.Log.d("SatiTimer", "Service unbound in onDestroy()")
+    }
+    super.onDestroy()
+  }
+
   fun enterImmersiveMode() {
-    WindowCompat.setDecorFitsSystemWindows(window, false)
-    window.insetsController?.let { controller ->
-      controller.hide(WindowInsetsCompat.Type.statusBars())
-      controller.systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+      window.setDecorFitsSystemWindows(false)
+      window.insetsController?.let { controller ->
+        controller.hide(
+                android.view.WindowInsets.Type.statusBars() or
+                        android.view.WindowInsets.Type.navigationBars()
+        )
+        controller.systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+      }
+    } else {
+      @Suppress("DEPRECATION")
+      window.decorView.systemUiVisibility =
+              (android.view.View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
+                      android.view.View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+                      android.view.View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
+                      android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
+                      android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
+                      android.view.View.SYSTEM_UI_FLAG_FULLSCREEN)
     }
   }
 
   fun exitImmersiveMode() {
-    WindowCompat.setDecorFitsSystemWindows(window, true)
-    window.insetsController?.show(WindowInsetsCompat.Type.statusBars())
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+      window.setDecorFitsSystemWindows(true)
+      window.insetsController?.show(
+              android.view.WindowInsets.Type.statusBars() or
+                      android.view.WindowInsets.Type.navigationBars()
+      )
+    } else {
+      @Suppress("DEPRECATION")
+      window.decorView.systemUiVisibility = android.view.View.SYSTEM_UI_FLAG_VISIBLE
+    }
   }
 }
 
-enum class TimerState {
-  STOPPED,
-  PREPARING,
-  RUNNING,
-  PAUSED
-}
-
 @Composable
-fun MeditationTimerScreen(
-        modifier: Modifier = Modifier,
-        getTimerService: () -> MeditationTimerService?
-) {
+fun SatiTimerScreen(modifier: Modifier = Modifier, getTimerService: () -> SatiTimerService?) {
   var timeInSeconds by remember { mutableIntStateOf(1200) } // 20 minutes default
   var serviceState by remember { mutableStateOf(TimerServiceState()) }
+  var showDurationPicker by remember { mutableStateOf(false) }
 
   val context = LocalContext.current
+  val durationRepository = remember { DurationRepository(context) }
+  val recentDurations by
+          durationRepository.recentDurations.collectAsState(initial = listOf(60, 1200, 1800))
+  val coroutineScope = rememberCoroutineScope()
 
   // Observe service state
   LaunchedEffect(Unit) {
@@ -273,14 +330,22 @@ fun MeditationTimerScreen(
           Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             if (serviceState.timerState == TimerState.PREPARING) {
               Text(
-                      text = context.getString(R.string.get_ready, serviceState.preparationTime),
+                      text = "Get ready\n${serviceState.preparationTime}",
                       style = MaterialTheme.typography.headlineLarge.copy(fontSize = 28.sp),
                       fontWeight = FontWeight.Light,
-                      color = Color(0xFFE3C170)
+                      color = Color(0xFFE3C170),
+                      textAlign = TextAlign.Center
               )
             } else {
+              // Show selected time when stopped, otherwise show remaining time
+              val displayTime =
+                      if (serviceState.timerState == TimerState.STOPPED) {
+                        timeInSeconds
+                      } else {
+                        serviceState.remainingTime
+                      }
               Text(
-                      text = formatTime(serviceState.remainingTime),
+                      text = formatTime(displayTime),
                       style = MaterialTheme.typography.headlineLarge.copy(fontSize = 36.sp),
                       fontWeight = FontWeight.Light,
                       color = Color(0xFFE3C170)
@@ -296,23 +361,44 @@ fun MeditationTimerScreen(
       Box(modifier = Modifier.height(80.dp), contentAlignment = Alignment.Center) {
         if (serviceState.timerState == TimerState.STOPPED) {
           Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            TimeButton(
-                    text = context.getString(R.string.one_minute),
-                    isSelected = timeInSeconds == 60,
-                    onClick = { timeInSeconds = 60 }
-            )
-            TimeButton(
-                    text = context.getString(R.string.twenty_minutes),
-                    isSelected = timeInSeconds == 1200,
-                    onClick = { timeInSeconds = 1200 }
-            )
-            TimeButton(
-                    text = context.getString(R.string.thirty_minutes),
-                    isSelected = timeInSeconds == 1800,
-                    onClick = { timeInSeconds = 1800 }
-            )
+            // Recent duration buttons (MRU queue)
+            recentDurations.take(3).forEach { duration ->
+              TimeButton(
+                      text = "${duration / 60} min",
+                      isSelected = timeInSeconds == duration,
+                      onClick = {
+                        timeInSeconds = duration
+                        // Duration selection only - MRU update happens when Start is pressed
+                      }
+              )
+            }
+
+            // Add icon
+            IconButton(onClick = { showDurationPicker = true }) {
+              Icon(
+                      imageVector = Icons.Default.AddCircleOutline,
+                      contentDescription = "Add custom duration",
+                      modifier = Modifier.size(32.dp),
+                      tint = Color(0xFFE3C170)
+              )
+            }
           }
         }
+      }
+
+      // Duration Picker Dialog
+      if (showDurationPicker) {
+        DurationPickerDialog(
+                currentDurations = recentDurations,
+                onDurationSelected = { durationMinutes ->
+                  val durationSeconds = durationMinutes * 60
+                  timeInSeconds = durationSeconds
+                  // For new custom durations, immediately add to MRU queue
+                  coroutineScope.launch { durationRepository.addRecentDuration(durationSeconds) }
+                  showDurationPicker = false
+                },
+                onDismiss = { showDurationPicker = false }
+        )
       }
 
       Spacer(modifier = Modifier.height(32.dp))
@@ -323,12 +409,15 @@ fun MeditationTimerScreen(
                 val service = getTimerService()
                 when (serviceState.timerState) {
                   TimerState.STOPPED -> {
+                    // Add selected duration to MRU queue when actually starting meditation
+                    coroutineScope.launch { durationRepository.addRecentDuration(timeInSeconds) }
+
                     // Start the service if not running, or call startTimer if already running
                     if (service == null) {
                       val intent =
-                              Intent(context, MeditationTimerService::class.java).apply {
-                                action = MeditationTimerService.ACTION_START_TIMER
-                                putExtra(MeditationTimerService.EXTRA_DURATION, timeInSeconds)
+                              Intent(context, SatiTimerService::class.java).apply {
+                                action = SatiTimerService.ACTION_START_TIMER
+                                putExtra(SatiTimerService.EXTRA_DURATION, timeInSeconds)
                               }
                       context.startForegroundService(intent)
                     } else {
@@ -364,11 +453,13 @@ fun MeditationTimerScreen(
                           )
                                   context.getString(R.string.stop)
                           else context.getString(R.string.start),
-                  modifier = Modifier.size(40.dp),
+                  modifier = Modifier.size(32.dp),
                   tint = Color(0xFF1A120B)
           )
         }
       }
+
+      Spacer(modifier = Modifier.height(48.dp))
     }
   }
 }
@@ -377,7 +468,7 @@ fun MeditationTimerScreen(
 fun TimeButton(text: String, isSelected: Boolean, onClick: () -> Unit) {
   Button(
           onClick = onClick,
-          modifier = Modifier.width(72.dp),
+          modifier = Modifier.width(88.dp),
           colors =
                   if (isSelected) {
                     ButtonDefaults.buttonColors(
@@ -393,10 +484,98 @@ fun TimeButton(text: String, isSelected: Boolean, onClick: () -> Unit) {
   ) {
     Text(
             text = text,
-            style = MaterialTheme.typography.bodyMedium,
+            style = MaterialTheme.typography.bodySmall,
             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
     )
   }
+}
+
+@Composable
+fun DurationPickerDialog(
+        currentDurations: List<Int>,
+        onDurationSelected: (Int) -> Unit,
+        onDismiss: () -> Unit
+) {
+  var selectedDuration by remember { mutableIntStateOf(20) }
+
+  AlertDialog(
+          onDismissRequest = onDismiss,
+          containerColor = Color(0xFF8B5E2D),
+          title = {
+            Text(
+                    text = "Select Duration",
+                    color = Color(0xFFE3C170),
+                    style = MaterialTheme.typography.headlineSmall
+            )
+          },
+          text = {
+            Column {
+              Text(
+                      text = "Choose meditation duration:",
+                      color = Color(0xFFE3C170),
+                      style = MaterialTheme.typography.bodyMedium
+              )
+
+              Spacer(modifier = Modifier.height(16.dp))
+
+              // Segmented duration picker - exclude current durations
+              val allDurations = (10..90 step 5).toList()
+              val currentDurationMinutes = currentDurations.map { it / 60 }
+              val availableDurations = allDurations.filter { it !in currentDurationMinutes }
+
+              LazyRow(
+                      horizontalArrangement = Arrangement.spacedBy(8.dp),
+                      modifier = Modifier.fillMaxWidth()
+              ) {
+                items(availableDurations) { duration ->
+                  Surface(
+                          onClick = { selectedDuration = duration },
+                          modifier = Modifier.width(56.dp).height(40.dp),
+                          shape = RoundedCornerShape(8.dp),
+                          color =
+                                  if (selectedDuration == duration) {
+                                    Color(0xFFE7C469)
+                                  } else {
+                                    Color(0xFF6B4423)
+                                  }
+                  ) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                      Text(
+                              text = "$duration",
+                              color =
+                                      if (selectedDuration == duration) {
+                                        Color(0xFF1A120B)
+                                      } else {
+                                        Color(0xFFE3C170)
+                                      },
+                              style = MaterialTheme.typography.bodySmall,
+                              fontWeight =
+                                      if (selectedDuration == duration) FontWeight.Bold
+                                      else FontWeight.Normal
+                      )
+                    }
+                  }
+                }
+              }
+
+              Spacer(modifier = Modifier.height(8.dp))
+
+              Text(
+                      text = "Selected: $selectedDuration minutes",
+                      color = Color(0xFFE3C170),
+                      style = MaterialTheme.typography.bodySmall
+              )
+            }
+          },
+          confirmButton = {
+            TextButton(onClick = { onDurationSelected(selectedDuration) }) {
+              Text(text = "Add", color = Color(0xFFE7C469), fontWeight = FontWeight.Bold)
+            }
+          },
+          dismissButton = {
+            TextButton(onClick = onDismiss) { Text(text = "Cancel", color = Color(0xFFE3C170)) }
+          }
+  )
 }
 
 fun formatTime(seconds: Int): String {
@@ -407,6 +586,6 @@ fun formatTime(seconds: Int): String {
 
 @Preview(showBackground = true)
 @Composable
-fun MeditationTimerPreview() {
-  MeditationTimerTheme { Surface { Text("Preview not available - requires service") } }
+fun SatiTimerPreview() {
+  SatiTimerTheme { SatiTimerScreen(getTimerService = { null }) }
 }

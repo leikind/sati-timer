@@ -1,4 +1,4 @@
-package be.profy.meditationtimer.ui.theme
+package be.profy.satitimer.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
