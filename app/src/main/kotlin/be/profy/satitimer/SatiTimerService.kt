@@ -332,16 +332,23 @@ class SatiTimerService : Service() {
 
   private fun startTimerCountdown() {
     android.util.Log.d("SatiTimer", "startTimerCountdown called")
+    val startTime = System.currentTimeMillis()
+    val preparationDuration = _state.value.preparationTime * 1000L
+    val totalDuration = _state.value.totalTime * 1000L
+
     timerJob =
             serviceScope.launch {
               while (true) {
+                val currentTime = System.currentTimeMillis()
+                val elapsedTime = currentTime - startTime
+
                 when (_state.value.timerState) {
                   TimerState.PREPARING -> {
-                    if (_state.value.preparationTime > 0) {
-                      delay(1000L)
-                      _state.value =
-                              _state.value.copy(preparationTime = _state.value.preparationTime - 1)
+                    val remainingPrepTime = ((preparationDuration - elapsedTime) / 1000).toInt()
+                    if (remainingPrepTime > 0) {
+                      _state.value = _state.value.copy(preparationTime = remainingPrepTime)
                       updateNotification()
+                      delay(100L) // Check every 100ms for smoother updates
                     } else {
                       // Preparation finished - play gong and start main timer
                       playGong()
@@ -350,11 +357,13 @@ class SatiTimerService : Service() {
                     }
                   }
                   TimerState.RUNNING -> {
-                    if (_state.value.remainingTime > 0) {
-                      delay(1000L)
-                      _state.value =
-                              _state.value.copy(remainingTime = _state.value.remainingTime - 1)
+                    val meditationElapsed = elapsedTime - preparationDuration
+                    val remainingTime = ((totalDuration - meditationElapsed) / 1000).toInt()
+
+                    if (remainingTime > 0) {
+                      _state.value = _state.value.copy(remainingTime = remainingTime)
                       updateNotification()
+                      delay(100L) // Check every 100ms for smoother updates
                     } else {
                       // Timer finished - play gong and complete session
                       android.util.Log.d("SatiTimerService", "Timer finished, playing gong")
